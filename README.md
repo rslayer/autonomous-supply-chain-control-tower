@@ -276,6 +276,67 @@ Operational data can be highly sensitive. The project should be designed around:
 - Clear import and export formats
 - No hard dependency on proprietary systems
 
+## Current Implementation
+
+The repository now uses a TypeScript monorepo designed for local simulation and Railway hosting.
+
+```text
+apps/
+  web/       React control tower dashboard
+  api/       Fastify API with in-memory scenario endpoints
+  worker/    Batch simulation runner
+packages/
+  domain/    Canonical supply chain model
+  simulation/Deterministic simulation engine
+  data-gen/  Texas-Oklahoma scenario generator
+  importers/ Upload schema and validation placeholders
+```
+
+## Running Locally
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Run the dashboard:
+
+```bash
+npm run dev
+```
+
+Run the API:
+
+```bash
+npm run dev:api
+```
+
+Run a 14-day batch simulation in the worker:
+
+```bash
+npm run simulate
+```
+
+Validate the workspace:
+
+```bash
+npm run check
+npm run build
+```
+
+## API Endpoints
+
+The API currently keeps scenario state in memory.
+
+- `GET /health`
+- `GET /scenario`
+- `POST /scenario/reset`
+- `POST /simulation/step`
+- `POST /simulation/run`
+- `GET /simulation/metrics`
+- `GET /exceptions`
+
 ## Suggested Tech Stack
 
 - Frontend: React and TypeScript

@@ -1,0 +1,28 @@
+{
+  "name": "autonomous-supply-chain-control-tower",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Open-source simulator for autonomous supply chain control tower operations.",
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build:packages && npm run build:apps",
+    "build:packages": "npm run build -w packages/domain && npm run build -w packages/data-gen && npm run build -w packages/simulation && npm run build -w packages/importers",
+    "build:apps": "npm run build -w apps/api && npm run build -w apps/worker && npm run build -w apps/web",
+    "dev": "npm run dev -w apps/web",
+    "dev:api": "npm run dev -w apps/api",
+    "dev:worker": "npm run dev -w apps/worker",
+    "check": "npm run build:packages && npm run typecheck --workspaces --if-present",
+    "simulate": "npm run build:packages && npm run build -w apps/worker && npm start -w apps/worker -- --once"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.10",
+    "typescript": "^5.8.3"
+  }
+}
