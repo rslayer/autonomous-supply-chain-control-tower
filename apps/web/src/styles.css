@@ -251,6 +251,52 @@ h1 {
   overflow: auto;
 }
 
+.import-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.template-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.template-grid button,
+.upload-target {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  border: 1px solid #c9d3df;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #17202a;
+  padding: 9px 10px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.upload-target {
+  position: relative;
+  background: #f8fafc;
+}
+
+.upload-target input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.upload-result {
+  margin: 0;
+  color: #66768a;
+  font-size: 0.84rem;
+}
+
 .exception,
 .facility,
 .event {

@@ -12,6 +12,7 @@
   "dependencies": {
     "@control-tower/data-gen": "*",
     "@control-tower/domain": "*",
+    "@control-tower/importers": "*",
     "@control-tower/simulation": "*",
     "@vitejs/plugin-react": "^4.6.0",
     "lucide-react": "^0.468.0",

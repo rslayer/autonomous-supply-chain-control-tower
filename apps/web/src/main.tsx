@@ -5,6 +5,7 @@ import { createTexasOklahomaScenario } from "@control-tower/data-gen";
 import { stepSimulation } from "@control-tower/simulation";
 import type { BusinessUnit, ScenarioState } from "@control-tower/domain";
 import { apiMode, fetchScenario, resetScenario, runScenario, stepScenario } from "./api";
+import { ImportPanel } from "./importPanel";
 import "./styles.css";
 
 function App() {
@@ -12,6 +13,7 @@ function App() {
   const [businessUnit, setBusinessUnit] = useState<BusinessUnit | "all">("all");
   const [isBusy, setIsBusy] = useState(false);
   const [statusMessage, setStatusMessage] = useState(apiMode === "api" ? "API mode" : "Local simulation mode");
+  const [uploadResult, setUploadResult] = useState("Download a template or check a CSV header.");
 
   useEffect(() => {
     if (apiMode !== "api") return;
@@ -217,6 +219,10 @@ function App() {
           </div>
         </Panel>
 
+        <Panel title="Data Upload Prep" icon={<FileUpIcon />}>
+          <ImportPanel result={uploadResult} onResult={setUploadResult} />
+        </Panel>
+
         <Panel title="Event Log" icon={<Clock size={18} />}>
           <div className="event-log">
             {scenario.facilities
@@ -287,6 +293,10 @@ function NetworkMap({ scenario, businessUnit }: { scenario: ScenarioState; busin
 
 function formatBusinessUnit(value: BusinessUnit): string {
   return value === "beverage" ? "Beverage" : "Foods";
+}
+
+function FileUpIcon() {
+  return <Boxes size={18} />;
 }
 
 createRoot(document.getElementById("root")!).render(<App />);
