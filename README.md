@@ -511,4 +511,4 @@ The first build is successful when:
 
 ## License
 
-License to be selected before public release. MIT or Apache-2.0 are both reasonable starting points for an open-source simulator.
+MIT License. See [LICENSE](LICENSE).
