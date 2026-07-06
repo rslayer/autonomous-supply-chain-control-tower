@@ -14,6 +14,21 @@ await server.register(cors, {
 
 let scenario: ScenarioState = createTexasOklahomaScenario();
 
+server.get("/", async () => ({
+  ok: true,
+  service: "autonomous-supply-chain-control-tower-api",
+  message: "API is running. Open the dashboard at http://localhost:5173/.",
+  endpoints: [
+    "GET /health",
+    "GET /scenario",
+    "POST /scenario/reset",
+    "POST /simulation/step",
+    "POST /simulation/run",
+    "GET /simulation/metrics",
+    "GET /exceptions"
+  ]
+}));
+
 server.get("/health", async () => ({
   ok: true,
   service: "autonomous-supply-chain-control-tower-api",
