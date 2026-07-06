@@ -6,6 +6,7 @@ import { stepSimulation } from "@control-tower/simulation";
 import type { BusinessUnit, ScenarioState } from "@control-tower/domain";
 import { apiMode, fetchScenario, resetScenario, runScenario, stepScenario } from "./api";
 import { ImportPanel } from "./importPanel";
+import type { CsvUploadValidationResult } from "@control-tower/importers";
 import "./styles.css";
 
 function App() {
@@ -13,7 +14,7 @@ function App() {
   const [businessUnit, setBusinessUnit] = useState<BusinessUnit | "all">("all");
   const [isBusy, setIsBusy] = useState(false);
   const [statusMessage, setStatusMessage] = useState(apiMode === "api" ? "API mode" : "Local simulation mode");
-  const [uploadResult, setUploadResult] = useState("Download a template or check a CSV header.");
+  const [uploadResults, setUploadResults] = useState<CsvUploadValidationResult[]>([]);
 
   useEffect(() => {
     if (apiMode !== "api") return;
@@ -220,7 +221,7 @@ function App() {
         </Panel>
 
         <Panel title="Data Upload Prep" icon={<FileUpIcon />}>
-          <ImportPanel result={uploadResult} onResult={setUploadResult} />
+          <ImportPanel results={uploadResults} onResults={setUploadResults} />
         </Panel>
 
         <Panel title="Event Log" icon={<Clock size={18} />}>

@@ -70,6 +70,76 @@ export const csvTemplates = {
 
 export type UploadTableName = keyof typeof csvTemplates;
 
+export const uploadSchemas: Record<UploadTableName, z.ZodSchema<unknown>> = {
+  facilities: facilityUploadSchema,
+  skus: skuUploadSchema,
+  inventory: inventoryUploadSchema,
+  shipments: shipmentUploadSchema,
+  orders: orderUploadSchema
+} as const;
+
+export interface CsvUploadValidationResult {
+  fileName: string;
+  tableName?: UploadTableName;
+  status: "valid" | "invalid";
+  rowCount: number;
+  validRowCount: number;
+  errors: Array<{ row: number; message: string }>;
+}
+
+export function validateCsvUpload(fileName: string, text: string): CsvUploadValidationResult {
+  const { headers, rows } = parseCsv(text);
+  const tableName = detectUploadTable(headers);
+
+  if (!tableName) {
+    return {
+      fileName,
+      status: "invalid",
+      rowCount: rows.length,
+      validRowCount: 0,
+      errors: [
+        {
+          row: 1,
+          message: `Header does not match a known template: ${headers.join(",")}`
+        }
+      ]
+    };
+  }
+
+  const validation = validateRows(rows, uploadSchemas[tableName]);
+
+  return {
+    fileName,
+    tableName,
+    status: validation.errors.length === 0 ? "valid" : "invalid",
+    rowCount: rows.length,
+    validRowCount: validation.validRows.length,
+    errors: validation.errors.slice(0, 8)
+  };
+}
+
+export function detectUploadTable(headers: string[]): UploadTableName | undefined {
+  const normalized = normalizeHeaders(headers);
+  return (Object.keys(csvTemplates) as UploadTableName[]).find((table) => {
+    return normalizeHeaders(csvTemplates[table].split(",")) === normalized;
+  });
+}
+
+export function parseCsv(text: string): { headers: string[]; rows: Array<Record<string, string>> } {
+  const records = parseCsvRecords(text).filter((record) => record.some((cell) => cell.trim().length > 0));
+  const [headers = [], ...body] = records;
+  const normalizedHeaders = headers.map((header) => header.trim());
+
+  return {
+    headers: normalizedHeaders,
+    rows: body.map((record) => {
+      return Object.fromEntries(
+        normalizedHeaders.map((header, index) => [header, record[index]?.trim() ?? ""])
+      );
+    })
+  };
+}
+
 export function validateRows<T>(rows: unknown[], schema: z.ZodSchema<T>): {
   validRows: T[];
   errors: Array<{ row: number; message: string }>;
@@ -90,4 +160,57 @@ export function validateRows<T>(rows: unknown[], schema: z.ZodSchema<T>): {
   });
 
   return { validRows, errors };
+}
+
+function normalizeHeaders(headers: string[]): string {
+  return headers.map((header) => header.trim().toLowerCase()).join(",");
+}
+
+function parseCsvRecords(text: string): string[][] {
+  const records: string[][] = [];
+  let record: string[] = [];
+  let cell = "";
+  let inQuotes = false;
+
+  for (let index = 0; index < text.length; index += 1) {
+    const char = text[index];
+    const next = text[index + 1];
+
+    if (char === '"' && inQuotes && next === '"') {
+      cell += '"';
+      index += 1;
+      continue;
+    }
+
+    if (char === '"') {
+      inQuotes = !inQuotes;
+      continue;
+    }
+
+    if (char === "," && !inQuotes) {
+      record.push(cell);
+      cell = "";
+      continue;
+    }
+
+    if ((char === "\n" || char === "\r") && !inQuotes) {
+      if (char === "\r" && next === "\n") {
+        index += 1;
+      }
+      record.push(cell);
+      records.push(record);
+      record = [];
+      cell = "";
+      continue;
+    }
+
+    cell += char;
+  }
+
+  if (cell.length > 0 || record.length > 0) {
+    record.push(cell);
+    records.push(record);
+  }
+
+  return records;
 }

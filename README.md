@@ -302,8 +302,10 @@ packages/
   domain/    Canonical supply chain model
   simulation/Deterministic simulation engine
   data-gen/  Texas-Oklahoma scenario generator
-  importers/ Upload schema and validation placeholders
+  importers/ CSV parsing, table detection, and upload validation
 ```
+
+The dashboard includes a data-upload prep panel that can download CSV templates, parse uploaded CSV rows, detect table type from headers, validate row-level values, and show valid row counts plus the first validation errors.
 
 ## Running Locally
 
