@@ -1,4 +1,4 @@
-# Control Tower Sim
+# Autonomous Supply Chain Control Tower
 
 An open-source simulator for agentic supply chain control tower operations.
 
@@ -290,7 +290,7 @@ Operational data can be highly sensitive. The project should be designed around:
 ## Proposed Project Structure
 
 ```text
-control-tower-sim/
+autonomous-supply-chain-control-tower/
   src/
     app/
       App.tsx

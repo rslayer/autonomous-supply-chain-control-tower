@@ -1,10 +1,10 @@
 # First Build Spec
 
-This document captures the first implementation target for Control Tower Sim.
+This document captures the first implementation target for Autonomous Supply Chain Control Tower.
 
 ## Product Definition
 
-Control Tower Sim is a local-first simulator for a Texas-Oklahoma CPG supply chain network inspired by beverage and Frito-Lay style food operations.
+Autonomous Supply Chain Control Tower is a local-first simulator for a Texas-Oklahoma CPG supply chain network inspired by beverage and Frito-Lay style food operations.
 
 The first release should create a credible operating environment, not a full decision automation system. It should generate operational pressure through shipments, demand, inventory consumption, production, and disruptions.
 
