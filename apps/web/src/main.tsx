@@ -1,14 +1,29 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Activity, AlertTriangle, Boxes, Building2, Clock, Filter, Play, RotateCcw, StepForward, Truck } from "lucide-react";
 import { createTexasOklahomaScenario } from "@control-tower/data-gen";
 import { stepSimulation } from "@control-tower/simulation";
 import type { BusinessUnit, ScenarioState } from "@control-tower/domain";
+import { apiMode, fetchScenario, resetScenario, runScenario, stepScenario } from "./api";
 import "./styles.css";
 
 function App() {
   const [scenario, setScenario] = useState<ScenarioState>(() => createTexasOklahomaScenario());
   const [businessUnit, setBusinessUnit] = useState<BusinessUnit | "all">("all");
+  const [isBusy, setIsBusy] = useState(false);
+  const [statusMessage, setStatusMessage] = useState(apiMode === "api" ? "API mode" : "Local simulation mode");
+
+  useEffect(() => {
+    if (apiMode !== "api") return;
+    fetchScenario()
+      .then((nextScenario) => {
+        setScenario(nextScenario);
+        setStatusMessage("Connected to API");
+      })
+      .catch((error: unknown) => {
+        setStatusMessage(error instanceof Error ? error.message : "API connection failed");
+      });
+  }, []);
 
   const filteredExceptions = useMemo(
     () => scenario.exceptions.filter((exception) => businessUnit === "all" || exception.businessUnit === businessUnit),
@@ -33,16 +48,39 @@ function App() {
     .sort((a, b) => a.available / a.safetyStockUnits - b.available / b.safetyStockUnits)
     .slice(0, 8);
 
-  function step(count = 1) {
-    let next = scenario;
-    for (let index = 0; index < count; index += 1) {
-      next = stepSimulation(next).state;
+  async function step(count = 1) {
+    setIsBusy(true);
+    try {
+      if (apiMode === "api") {
+        const next = count === 1 ? await stepScenario() : await runScenario(count);
+        setScenario(next);
+        setStatusMessage(`API advanced ${count * scenario.tickHours}h`);
+      } else {
+        let next = scenario;
+        for (let index = 0; index < count; index += 1) {
+          next = stepSimulation(next).state;
+        }
+        setScenario(next);
+        setStatusMessage(`Local simulation advanced ${count * scenario.tickHours}h`);
+      }
+    } catch (error) {
+      setStatusMessage(error instanceof Error ? error.message : "Simulation request failed");
+    } finally {
+      setIsBusy(false);
     }
-    setScenario(next);
   }
 
-  function reset() {
-    setScenario(createTexasOklahomaScenario());
+  async function reset() {
+    setIsBusy(true);
+    try {
+      const next = apiMode === "api" ? await resetScenario() : createTexasOklahomaScenario();
+      setScenario(next);
+      setStatusMessage(apiMode === "api" ? "API scenario reset" : "Local scenario reset");
+    } catch (error) {
+      setStatusMessage(error instanceof Error ? error.message : "Reset failed");
+    } finally {
+      setIsBusy(false);
+    }
   }
 
   return (
@@ -59,15 +97,15 @@ function App() {
       </header>
 
       <section className="toolbar" aria-label="Simulation controls">
-        <button onClick={() => step(1)}>
+        <button onClick={() => void step(1)} disabled={isBusy}>
           <StepForward size={17} />
           Step 6h
         </button>
-        <button onClick={() => step(8)}>
+        <button onClick={() => void step(8)} disabled={isBusy}>
           <Play size={17} />
           Run 48h
         </button>
-        <button onClick={reset}>
+        <button onClick={() => void reset()} disabled={isBusy}>
           <RotateCcw size={17} />
           Reset
         </button>
@@ -79,6 +117,7 @@ function App() {
             <option value="frito_lay">Frito-Lay style foods</option>
           </select>
         </label>
+        <span className="mode-pill">{statusMessage}</span>
       </section>
 
       <section className="kpis" aria-label="Control tower KPIs">

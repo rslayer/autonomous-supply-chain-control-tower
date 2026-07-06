@@ -61,6 +61,7 @@ npm start -w apps/worker
 - `DATABASE_URL`: Railway Postgres connection string
 - `REDIS_URL`: Railway Redis connection string
 - `CORS_ORIGIN`: deployed web URL
+- `VITE_API_URL`: deployed API URL for the web service
 - `SIMULATION_TICK_MS`: optional worker tick interval
 
 ## Deployment Path

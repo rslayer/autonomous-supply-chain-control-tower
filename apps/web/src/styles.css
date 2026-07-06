@@ -93,6 +93,11 @@ h1 {
   cursor: pointer;
 }
 
+.toolbar button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
 .toolbar button:hover {
   border-color: #7d91aa;
 }
@@ -102,6 +107,19 @@ h1 {
   background: transparent;
   color: inherit;
   outline: 0;
+}
+
+.mode-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  border: 1px solid #d8e2ea;
+  border-radius: 999px;
+  background: #eef7f8;
+  color: #16697a;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  font-weight: 800;
 }
 
 .kpis {

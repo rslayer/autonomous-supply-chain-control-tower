@@ -319,6 +319,12 @@ Run the dashboard:
 npm run dev
 ```
 
+By default, the dashboard runs the simulation in the browser. To point it at the API instead:
+
+```bash
+VITE_API_URL=http://localhost:3001 npm run dev
+```
+
 Run the API:
 
 ```bash
