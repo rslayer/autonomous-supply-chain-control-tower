@@ -168,6 +168,9 @@ function App() {
                   <div>
                     <strong>{facility.name}</strong>
                     <span>{facility.market} · {facility.type.replaceAll("_", " ")}</span>
+                    {facility.address && <span>{facility.address}</span>}
+                    {facility.role && <span>{facility.role}</span>}
+                    {facility.squareFeet && <span>{facility.squareFeet.toLocaleString()} sq ft</span>}
                   </div>
                   <meter value={facility.congestionLevel} min={0} max={1} />
                 </div>
@@ -177,7 +180,16 @@ function App() {
 
         <Panel title="Event Log" icon={<Clock size={18} />}>
           <div className="event-log">
-            {scenario.events.slice(0, 12).map((event) => (
+            {scenario.facilities
+              .filter((facility) => facility.sourceNote)
+              .map((facility) => (
+                <div className="event" key={facility.id}>
+                  <span>{facility.market} · {facility.type.replaceAll("_", " ")}</span>
+                  <strong>{facility.name}</strong>
+                  <p>{facility.sourceNote}</p>
+                </div>
+              ))}
+            {scenario.events.slice(0, 6).map((event) => (
               <div className="event" key={event.id}>
                 <span>{new Date(event.occurredAt).toLocaleString()}</span>
                 <strong>{event.title}</strong>

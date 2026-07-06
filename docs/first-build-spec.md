@@ -43,8 +43,8 @@ At each 6-hour tick:
 
 The default scenario should include:
 
-- Beverage operations centered on DFW, Houston, Austin, San Antonio, Oklahoma City, and Tulsa.
-- Frito-Lay style food operations centered on North Texas with distribution into Texas and Oklahoma markets.
+- Beverage operations anchored by the Dallas Gatorade bottling plant, Houston bottling/distribution, Brookshire 1NA Mixing Center, Oklahoma City beverage cross-dock, and major retail demand nodes.
+- Frito-Lay style food operations anchored by Rosenberg, San Antonio, and Dallas Brookhollow manufacturing, with Brookshire mixing and representative DSD depots across Texas and Oklahoma.
 - Heat-driven beverage demand.
 - Weekend snack demand.
 - Customer delivery windows.

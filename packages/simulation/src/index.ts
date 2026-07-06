@@ -433,14 +433,14 @@ function isWithin(iso: string, fromTime: string, toTime: string): boolean {
 
 function likelySource(facilityId: string, destinationFacilityId: string, businessUnit: Order["businessUnit"]): boolean {
   if (businessUnit === "beverage") {
-    if (destinationFacilityId.includes("hou")) return facilityId === "bev-dc-hou";
+    if (destinationFacilityId.includes("hou")) return facilityId === "bev-dc-houston";
     if (destinationFacilityId.includes("okc")) return facilityId === "bev-xdock-okc";
-    return facilityId === "bev-dc-dfw";
+    return facilityId === "bev-plant-gatorade-dallas";
   }
-  if (destinationFacilityId.includes("hou")) return facilityId === "fl-wh-hou";
-  if (destinationFacilityId.includes("okc")) return facilityId === "fl-wh-okc";
-  if (destinationFacilityId.includes("aus") || destinationFacilityId.includes("stores")) return facilityId === "fl-wh-aus";
-  return facilityId === "fl-mix-dfw";
+  if (destinationFacilityId.includes("hou")) return facilityId === "dsd-houston";
+  if (destinationFacilityId.includes("okc")) return facilityId === "dsd-okc";
+  if (destinationFacilityId.includes("aus") || destinationFacilityId.includes("stores")) return facilityId === "dsd-san-antonio";
+  return facilityId === "dsd-dfw";
 }
 
 function clamp(value: number, minimum: number, maximum: number): number {

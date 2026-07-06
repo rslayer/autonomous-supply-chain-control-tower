@@ -70,6 +70,10 @@ export interface Facility {
   location: GeoPoint;
   capacityUnits: number;
   congestionLevel: number;
+  address?: string;
+  role?: string;
+  sourceNote?: string;
+  squareFeet?: number;
 }
 
 export interface Sku {

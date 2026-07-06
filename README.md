@@ -42,6 +42,19 @@ It should answer:
   - Simplified direct-store-delivery route pressure for snacks
   - Full truckload and regional distribution for beverages
 
+The default synthetic network uses PepsiCo-specific Texas anchors supplied during project definition:
+
+- Rosenberg Frito-Lay manufacturing
+- San Antonio Frito-Lay manufacturing at 4855 Greatland Dr.
+- Dallas / Brookhollow Frito-Lay manufacturing at 1141 Regal Row
+- Dallas Gatorade bottling plant
+- Brookshire 1NA Mixing Center
+- Houston Pepsi Beverages bottling and distribution center
+- Plano PFNA / PepsiCo Foods headquarters at 7701 Legacy Dr.
+- Representative Frito-Lay DSD depots for dense regional distribution
+
+The model remains a simulation. It does not use confidential facility capacity, inventory, production, or shipment data.
+
 ### Initial Markets
 
 - Dallas-Fort Worth

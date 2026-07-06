@@ -34,16 +34,46 @@ function metrics(): SimulationMetrics {
 
 export function createTexasOklahomaScenario(): ScenarioState {
   const facilities: Facility[] = [
-    facility("bev-plant-dfw", "North Texas Beverage Plant", "plant", "Dallas-Fort Worth", "TX", ["beverage"], 32.89, -97.04, 180000),
-    facility("bev-dc-dfw", "DFW Beverage DC", "dc", "Dallas-Fort Worth", "TX", ["beverage"], 32.78, -96.8, 130000),
-    facility("bev-dc-hou", "Houston Beverage DC", "dc", "Houston", "TX", ["beverage"], 29.76, -95.37, 120000),
-    facility("bev-dc-sa", "San Antonio Beverage DC", "dc", "San Antonio", "TX", ["beverage"], 29.42, -98.49, 90000),
+    facility("fl-plant-rosenberg", "Rosenberg Frito-Lay Manufacturing", "plant", "Rosenberg", "TX", ["frito_lay"], 29.56, -95.81, 220000, {
+      role: "Major southern snack manufacturing anchor",
+      sourceNote: "Produces snacks serving Texas, Louisiana, Oklahoma, Kansas, and Georgia; expansion adds Funyuns, tortilla-chip lines, and warehouse capacity."
+    }),
+    facility("fl-plant-san-antonio", "San Antonio Frito-Lay Manufacturing", "plant", "San Antonio", "TX", ["frito_lay"], 29.43, -98.39, 130000, {
+      address: "4855 Greatland Dr, San Antonio, TX",
+      role: "Central Texas snack manufacturing plant paired with warehouse capacity",
+      sourceNote: "Near the origin story of the Frito Company, founded in 1932."
+    }),
+    facility("fl-plant-brookhollow", "Dallas Brookhollow Frito-Lay Manufacturing", "plant", "Dallas-Fort Worth", "TX", ["frito_lay"], 32.82, -96.89, 110000, {
+      address: "1141 Regal Row, Dallas, TX",
+      role: "Legacy snack production site"
+    }),
+    facility("bev-plant-gatorade-dallas", "Dallas Gatorade Bottling Plant", "plant", "Dallas-Fort Worth", "TX", ["beverage"], 32.84, -96.9, 180000, {
+      role: "PBNA / Gatorade bottling plant",
+      sourceNote: "Designated by PepsiCo as a high-water-risk site and a focus of water-efficiency programs."
+    }),
+    facility("mix-1na-brookshire", "Brookshire 1NA Mixing Center", "mixing_center", "Brookshire", "TX", ["beverage", "frito_lay"], 29.79, -95.95, 300000, {
+      role: "Integrated PBNA, Quaker, and Frito-Lay distribution hub",
+      sourceNote: "Roughly 1.1M-square-foot Houston-area industrial lease described as a first-ever 1NA Mixing Center.",
+      squareFeet: 1_100_000
+    }),
+    facility("bev-dc-houston", "Houston Pepsi Beverages Bottling and DC", "dc", "Houston", "TX", ["beverage"], 29.76, -95.37, 140000, {
+      role: "Pepsi Beverages Company bottling and distribution center"
+    }),
+    facility("hq-plano-pfna", "Plano PFNA / PepsiCo Foods HQ", "warehouse", "Dallas-Fort Worth", "TX", ["frito_lay"], 33.08, -96.82, 30000, {
+      address: "7701 Legacy Dr, Plano, TX",
+      role: "Corporate nerve center, included as a control-tower coordination node"
+    }),
+    facility("dsd-dfw", "DFW Frito-Lay DSD Depot", "warehouse", "Dallas-Fort Worth", "TX", ["frito_lay"], 32.86, -96.9, 70000, {
+      role: "Representative DSD depot from dense Texas depot network"
+    }),
+    facility("dsd-houston", "Houston Frito-Lay DSD Depot", "warehouse", "Houston", "TX", ["frito_lay"], 29.8, -95.45, 85000, {
+      role: "Representative DSD depot from dense Texas depot network"
+    }),
+    facility("dsd-san-antonio", "San Antonio Frito-Lay DSD Depot", "warehouse", "San Antonio", "TX", ["frito_lay"], 29.42, -98.49, 70000, {
+      role: "Central Texas warehouse and DSD replenishment node"
+    }),
+    facility("dsd-okc", "Oklahoma Frito-Lay DSD Depot", "warehouse", "Oklahoma City", "OK", ["frito_lay"], 35.5, -97.57, 65000),
     facility("bev-xdock-okc", "Oklahoma City Beverage Cross-Dock", "cross_dock", "Oklahoma City", "OK", ["beverage"], 35.47, -97.52, 50000),
-    facility("fl-plant-ntx", "North Texas Frito-Lay Style Plant", "plant", "Dallas-Fort Worth", "TX", ["frito_lay"], 33.02, -96.7, 160000),
-    facility("fl-mix-dfw", "DFW Foods Mixing Center", "mixing_center", "Dallas-Fort Worth", "TX", ["frito_lay"], 32.86, -96.9, 125000),
-    facility("fl-wh-hou", "Houston Foods Warehouse", "warehouse", "Houston", "TX", ["frito_lay"], 29.8, -95.45, 85000),
-    facility("fl-wh-aus", "Austin-San Antonio Foods Warehouse", "warehouse", "Austin", "TX", ["frito_lay"], 30.27, -97.74, 70000),
-    facility("fl-wh-okc", "Oklahoma Foods Warehouse", "warehouse", "Oklahoma City", "OK", ["frito_lay"], 35.5, -97.57, 65000),
     facility("cust-dfw", "DFW Retail DC", "customer_dc", "Dallas-Fort Worth", "TX", ["beverage", "frito_lay"], 32.91, -96.75, 70000),
     facility("cust-hou", "Houston Grocery DC", "customer_dc", "Houston", "TX", ["beverage", "frito_lay"], 29.7, -95.35, 76000),
     facility("cust-okc", "OKC Retail DC", "customer_dc", "Oklahoma City", "OK", ["beverage", "frito_lay"], 35.44, -97.48, 56000),
@@ -86,7 +116,7 @@ export function createTexasOklahomaScenario(): ScenarioState {
         type: "production",
         severity: "low",
         title: "Scenario initialized",
-        description: "Texas-Oklahoma beverage and Frito-Lay style network loaded."
+        description: "PepsiCo-specific Texas-Oklahoma beverage and Frito-Lay network loaded with manufacturing, mixing, DSD, and customer nodes."
       }
     ],
     metrics: metrics()
@@ -102,7 +132,8 @@ function facility(
   businessUnits: Facility["businessUnits"],
   latitude: number,
   longitude: number,
-  capacityUnits: number
+  capacityUnits: number,
+  metadata: Pick<Facility, "address" | "role" | "sourceNote" | "squareFeet"> = {}
 ): Facility {
   return {
     id,
@@ -113,7 +144,8 @@ function facility(
     businessUnits,
     location: { latitude, longitude },
     capacityUnits,
-    congestionLevel: type === "cross_dock" ? 0.28 : 0.18
+    congestionLevel: type === "cross_dock" || type === "mixing_center" ? 0.28 : 0.18,
+    ...metadata
   };
 }
 
@@ -198,20 +230,22 @@ function createLanes(carriers: Carrier[]): Lane[] {
   const backup = carriers[1]?.id ?? "carrier-red-river";
   const dsd = carriers[3]?.id ?? "carrier-dsd";
   const pairs = [
-    ["bev-plant-dfw", "bev-dc-dfw", 22, 8, "truckload", ["beverage"], primary, backup],
-    ["bev-plant-dfw", "bev-dc-hou", 250, 14, "truckload", ["beverage"], primary, "carrier-gulf"],
-    ["bev-plant-dfw", "bev-dc-sa", 285, 16, "truckload", ["beverage"], backup, primary],
-    ["bev-dc-dfw", "bev-xdock-okc", 205, 12, "truckload", ["beverage"], backup, primary],
-    ["bev-dc-dfw", "cust-dfw", 35, 6, "truckload", ["beverage"], primary, backup],
-    ["bev-dc-hou", "cust-hou", 28, 6, "truckload", ["beverage"], "carrier-gulf", primary],
+    ["bev-plant-gatorade-dallas", "mix-1na-brookshire", 255, 14, "truckload", ["beverage"], primary, "carrier-gulf"],
+    ["bev-plant-gatorade-dallas", "cust-dfw", 28, 6, "truckload", ["beverage"], primary, backup],
+    ["mix-1na-brookshire", "bev-dc-houston", 40, 6, "truckload", ["beverage"], "carrier-gulf", primary],
+    ["bev-dc-houston", "cust-hou", 28, 6, "truckload", ["beverage"], "carrier-gulf", primary],
+    ["mix-1na-brookshire", "bev-xdock-okc", 455, 18, "truckload", ["beverage"], backup, primary],
     ["bev-xdock-okc", "cust-okc", 16, 4, "ltl", ["beverage"], backup, primary],
-    ["fl-plant-ntx", "fl-mix-dfw", 30, 6, "truckload", ["frito_lay"], primary, backup],
-    ["fl-mix-dfw", "fl-wh-hou", 245, 14, "truckload", ["frito_lay"], "carrier-gulf", backup],
-    ["fl-mix-dfw", "fl-wh-aus", 195, 12, "truckload", ["frito_lay"], backup, primary],
-    ["fl-mix-dfw", "fl-wh-okc", 210, 12, "truckload", ["frito_lay"], backup, primary],
-    ["fl-wh-aus", "stores-aus", 24, 5, "dsd", ["frito_lay"], dsd, backup],
-    ["fl-wh-hou", "cust-hou", 30, 5, "dsd", ["frito_lay"], dsd, backup],
-    ["fl-wh-okc", "cust-okc", 18, 5, "dsd", ["frito_lay"], dsd, backup]
+    ["fl-plant-rosenberg", "mix-1na-brookshire", 18, 5, "truckload", ["frito_lay"], "carrier-gulf", primary],
+    ["fl-plant-san-antonio", "dsd-san-antonio", 12, 4, "truckload", ["frito_lay"], backup, primary],
+    ["fl-plant-brookhollow", "dsd-dfw", 8, 4, "truckload", ["frito_lay"], primary, backup],
+    ["mix-1na-brookshire", "dsd-houston", 40, 6, "truckload", ["frito_lay"], "carrier-gulf", backup],
+    ["mix-1na-brookshire", "dsd-okc", 455, 18, "truckload", ["frito_lay"], backup, primary],
+    ["mix-1na-brookshire", "dsd-san-antonio", 190, 12, "truckload", ["frito_lay"], backup, primary],
+    ["dsd-san-antonio", "stores-aus", 80, 6, "dsd", ["frito_lay"], dsd, backup],
+    ["dsd-houston", "cust-hou", 30, 5, "dsd", ["frito_lay"], dsd, backup],
+    ["dsd-okc", "cust-okc", 18, 5, "dsd", ["frito_lay"], dsd, backup],
+    ["dsd-dfw", "cust-dfw", 24, 5, "dsd", ["frito_lay"], dsd, backup]
   ] as const;
 
   return pairs.map(([originFacilityId, destinationFacilityId, miles, baseTransitHours, mode, businessUnits, primaryCarrierId, backupCarrierId], index) => ({
@@ -308,17 +342,17 @@ function createShipments(orders: Order[], lanes: Lane[], carriers: Carrier[]): S
     const origin =
       order.businessUnit === "beverage"
         ? order.destinationFacilityId === "cust-hou"
-          ? "bev-dc-hou"
+          ? "bev-dc-houston"
           : order.destinationFacilityId === "cust-okc"
             ? "bev-xdock-okc"
-            : "bev-dc-dfw"
+            : "bev-plant-gatorade-dallas"
         : order.destinationFacilityId === "stores-aus"
-          ? "fl-wh-aus"
+          ? "dsd-san-antonio"
           : order.destinationFacilityId === "cust-hou"
-            ? "fl-wh-hou"
+            ? "dsd-houston"
             : order.destinationFacilityId === "cust-okc"
-              ? "fl-wh-okc"
-              : "fl-mix-dfw";
+              ? "dsd-okc"
+              : "dsd-dfw";
     const lane = lanes.find((candidate) => candidate.originFacilityId === origin && candidate.destinationFacilityId === order.destinationFacilityId) ?? lanes.find((candidate) => candidate.businessUnits.includes(order.businessUnit));
     const selectedLane = lane ?? lanes[0];
     const carrier = carriers.find((candidate) => candidate.id === selectedLane?.primaryCarrierId) ?? carriers[0];
@@ -348,7 +382,7 @@ function createProductionPlans(skus: Sku[]): ProductionPlan[] {
   return skus.flatMap((sku, index) =>
     Array.from({ length: 7 }, (_, day) => ({
       id: `prod-${day}-${sku.id}`,
-      facilityId: sku.businessUnit === "beverage" ? "bev-plant-dfw" : "fl-plant-ntx",
+      facilityId: sku.businessUnit === "beverage" ? "bev-plant-gatorade-dallas" : "fl-plant-rosenberg",
       skuId: sku.id,
       plannedUnits: sku.velocity === "high" ? 9500 : sku.velocity === "medium" ? 6200 : 3200,
       producedUnits: 0,
@@ -374,11 +408,11 @@ function createDisruptions(): Disruption[] {
     {
       id: "disrupt-dfw-congestion",
       type: "warehouse_congestion",
-      title: "DFW warehouse congestion slows outbound handling",
+      title: "Brookshire 1NA mixing center congestion slows outbound handling",
       startsAt: addHours(startTime, 48),
       endsAt: addHours(startTime, 96),
       severity: "medium",
-      market: "Dallas-Fort Worth",
+      market: "Brookshire",
       effect: { delayHours: 8, congestionIncrease: 0.22 }
     },
     {
@@ -398,7 +432,7 @@ function createDisruptions(): Disruption[] {
       startsAt: addHours(startTime, 36),
       endsAt: addHours(startTime, 84),
       severity: "high",
-      facilityId: "fl-plant-ntx",
+      facilityId: "fl-plant-rosenberg",
       businessUnit: "frito_lay",
       effect: { productionMultiplier: 0.72 }
     }
