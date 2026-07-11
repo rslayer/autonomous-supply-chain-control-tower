@@ -3,8 +3,6 @@ import { createRoot } from "react-dom/client";
 import {
   AlertTriangle,
   Bot,
-  Boxes,
-  Building2,
   CheckCircle2,
   CircleDot,
   Clock,
@@ -24,8 +22,6 @@ import { createTexasOklahomaScenario } from "@control-tower/data-gen";
 import { stepSimulation } from "@control-tower/simulation";
 import type { AutomationDecision, BusinessUnit, ScenarioState, Shipment } from "@control-tower/domain";
 import { apiMode, fetchScenario, resetScenario, runScenario, stepScenario } from "./api";
-import { ImportPanel } from "./importPanel";
-import type { CsvUploadValidationResult } from "@control-tower/importers";
 import "./styles.css";
 
 const agentRoles = [
@@ -51,6 +47,69 @@ const agentRoles = [
   }
 ] as const;
 
+type CorridorTone = "south" | "northeast" | "west" | "midwest";
+
+interface CorridorNode {
+  id: string;
+  label: string;
+  x: number;
+  y: number;
+}
+
+interface Corridor {
+  name: string;
+  tone: CorridorTone;
+  nodes: CorridorNode[];
+}
+
+const texasOklahomaCorridor: Corridor = {
+  name: "Texas / Oklahoma",
+  tone: "south",
+  nodes: [
+    { id: "sat", label: "San Antonio", x: 47, y: 77 },
+    { id: "hou", label: "Houston", x: 53, y: 75 },
+    { id: "dfw", label: "Dallas", x: 52, y: 68 },
+    { id: "okc", label: "OKC", x: 53, y: 62 },
+    { id: "tul", label: "Tulsa", x: 56, y: 60 }
+  ]
+};
+
+const northeastCorridor: Corridor = {
+  name: "Northeast",
+  tone: "northeast",
+  nodes: [
+    { id: "mtl", label: "Montreal", x: 78, y: 24 },
+    { id: "bos", label: "Boston", x: 82, y: 34 },
+    { id: "nyc", label: "NYC", x: 79, y: 41 },
+    { id: "phl", label: "Philadelphia", x: 77, y: 45 },
+    { id: "dc", label: "DC", x: 75, y: 50 }
+  ]
+};
+
+const westCoastCorridor: Corridor = {
+  name: "West Coast",
+  tone: "west",
+  nodes: [
+    { id: "sac", label: "Sacramento", x: 16, y: 55 },
+    { id: "pdx", label: "Portland", x: 16, y: 40 },
+    { id: "sea", label: "Seattle", x: 17, y: 34 },
+    { id: "van", label: "Vancouver", x: 18, y: 29 }
+  ]
+};
+
+const midwestCorridor: Corridor = {
+  name: "Midwest",
+  tone: "midwest",
+  nodes: [
+    { id: "tor", label: "Toronto", x: 70, y: 39 },
+    { id: "det", label: "Detroit", x: 65, y: 44 },
+    { id: "chi", label: "Chicago", x: 58, y: 48 },
+    { id: "msp", label: "Minneapolis", x: 49, y: 43 }
+  ]
+};
+
+const corridors: Corridor[] = [texasOklahomaCorridor, northeastCorridor, westCoastCorridor, midwestCorridor];
+
 function App() {
   const [scenario, setScenario] = useState<ScenarioState>(() => createTexasOklahomaScenario());
   const [businessUnit, setBusinessUnit] = useState<BusinessUnit | "all">("all");
@@ -60,7 +119,6 @@ function App() {
   const [query, setQuery] = useState("");
   const [selectedShipmentId, setSelectedShipmentId] = useState<string | undefined>();
   const [statusMessage, setStatusMessage] = useState(apiMode === "api" ? "API mode" : "Local simulation mode");
-  const [uploadResults, setUploadResults] = useState<CsvUploadValidationResult[]>([]);
 
   useEffect(() => {
     if (apiMode !== "api") return;
@@ -185,7 +243,6 @@ function App() {
           <a href="#journey"><Truck size={18} /> Journey</a>
           <a href="#field"><MapPin size={18} /> Trucks</a>
           <a href="#agents"><Bot size={18} /> Agents</a>
-          <a href="#uploads"><Boxes size={18} /> Uploads</a>
         </nav>
         <div className="agent-primer">
           <span className="section-kicker">Agent Layer</span>
@@ -258,8 +315,13 @@ function App() {
 
         <section className="command-grid">
           <section className="mission-panel map-panel" id="field">
-            <PanelTitle icon={<MapPin size={18} />} title="Trucks In The Field" />
-            <RegionalField scenario={scenario} shipments={activeTrucks} selectedShipment={selectedShipment} onSelect={setSelectedShipmentId} />
+            <PanelTitle icon={<MapPin size={18} />} title="North America Field Map" />
+            <NorthAmericaField
+              scenario={scenario}
+              shipments={activeTrucks}
+              selectedShipment={selectedShipment}
+              onSelect={setSelectedShipmentId}
+            />
           </section>
 
           <section className="mission-panel journey-panel" id="journey">
@@ -300,11 +362,6 @@ function App() {
             <PanelTitle icon={<Bot size={18} />} title="Agent Console" />
             <AgentConsole decision={selectedDecision} decisions={scenario.automationDecisions} />
           </section>
-
-          <section className="mission-panel uploads-panel" id="uploads">
-            <PanelTitle icon={<Boxes size={18} />} title="Live Data Prep" />
-            <ImportPanel results={uploadResults} onResults={setUploadResults} />
-          </section>
         </section>
 
         <footer className="activity-rail">
@@ -337,7 +394,7 @@ function PanelTitle({ icon, title }: { icon: React.ReactNode; title: string }) {
   );
 }
 
-function RegionalField({
+function NorthAmericaField({
   scenario,
   shipments,
   selectedShipment,
@@ -349,31 +406,59 @@ function RegionalField({
   onSelect: (shipmentId: string) => void;
 }) {
   return (
-    <div className="field-map" aria-label="Truck field map">
-      {scenario.facilities.slice(0, 14).map((facility) => {
-        const point = mapPoint(facility.location.latitude, facility.location.longitude);
-        return (
-          <div className={`facility-pin ${facility.type}`} key={facility.id} style={{ left: `${point.x}%`, top: `${point.y}%` }}>
-            <Building2 size={12} />
-            <span>{facility.market}</span>
-          </div>
-        );
-      })}
-      {shipments.map((shipment) => {
-        const point = shipmentPoint(scenario, shipment);
+    <div className="field-map north-america-map" aria-label="North America truck field map">
+      <svg className="continent-map" viewBox="0 0 100 100" role="img" aria-label="North America lanes">
+        <path
+          className="continent-shape"
+          d="M12 13 C20 7 33 10 40 17 C49 9 62 9 70 18 C80 17 89 24 91 36 C84 43 82 53 78 61 C71 66 64 66 60 73 C54 80 43 82 35 77 C30 72 26 69 21 67 C14 63 9 55 11 47 C15 39 9 30 12 13 Z"
+        />
+        <path
+          className="continent-shape lower"
+          d="M38 73 C45 77 50 84 48 90 C42 90 36 87 33 81 C30 76 33 72 38 73 Z"
+        />
+        <path
+          className="lake-shape"
+          d="M58 39 C61 36 68 36 70 40 C68 43 61 44 58 39 Z M69 36 C72 34 76 35 77 38 C74 40 70 40 69 36 Z"
+        />
+        {corridors.map((corridor) => (
+          <polyline className={`corridor-line ${corridor.tone}`} key={corridor.name} points={corridorPath(corridor)} />
+        ))}
+        {corridors.flatMap((corridor) =>
+          corridor.nodes.map((node) => (
+            <g className={`corridor-node ${corridor.tone}`} key={`${corridor.name}-${node.id}`}>
+              <circle cx={node.x} cy={node.y} r="1.6" />
+              <text x={node.x + 2.2} y={node.y - 1.6}>
+                {node.label}
+              </text>
+            </g>
+          ))
+        )}
+      </svg>
+
+      {shipments.map((shipment, index) => {
+        const corridor = corridorForShipment(shipment, index);
+        const point = pointOnCorridor(corridor, progressRatio(scenario.currentTime, shipment));
         const status = shipmentStatus(shipment);
         return (
           <button
-            className={`truck-pin ${status} ${shipment.id === selectedShipment?.id ? "selected" : ""}`}
+            className={`truck-pin ${status} ${shipment.id === selectedShipment?.id ? "selected" : ""} ${corridor.tone}`}
             key={shipment.id}
             onClick={() => onSelect(shipment.id)}
             style={{ left: `${point.x}%`, top: `${point.y}%` }}
-            title={shipment.id}
+            title={`${shipment.id} on ${corridor.name}`}
           >
             <Truck size={15} />
           </button>
         );
       })}
+      <div className="map-legend" aria-label="Corridor legend">
+        {corridors.map((corridor) => (
+          <span key={corridor.name}>
+            <i className={corridor.tone} />
+            {corridor.name}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
@@ -516,19 +601,6 @@ function marketPosition(scenario: ScenarioState, shipment: Shipment): string {
   return `En route to ${destination?.market ?? "destination"}`;
 }
 
-function shipmentPoint(scenario: ScenarioState, shipment: Shipment): { x: number; y: number } {
-  const origin = scenario.facilities.find((facility) => facility.id === shipment.originFacilityId);
-  const destination = scenario.facilities.find((facility) => facility.id === shipment.destinationFacilityId);
-  if (!origin || !destination) return { x: 50, y: 50 };
-  const originPoint = mapPoint(origin.location.latitude, origin.location.longitude);
-  const destinationPoint = mapPoint(destination.location.latitude, destination.location.longitude);
-  const progress = progressRatio(scenario.currentTime, shipment);
-  return {
-    x: originPoint.x + (destinationPoint.x - originPoint.x) * progress,
-    y: originPoint.y + (destinationPoint.y - originPoint.y) * progress
-  };
-}
-
 function progressRatio(currentTime: string, shipment: Shipment): number {
   if (shipment.status === "delivered" || shipment.status === "missed") return 1;
   if (shipment.status === "planned" || shipment.status === "accepted") return 0.08;
@@ -539,14 +611,29 @@ function progressRatio(currentTime: string, shipment: Shipment): number {
   return Math.min(0.92, Math.max(0.12, (now - planned) / (eta - planned)));
 }
 
-function mapPoint(latitude: number, longitude: number): { x: number; y: number } {
-  const minLat = 25.5;
-  const maxLat = 37.5;
-  const minLng = -103.5;
-  const maxLng = -93.5;
+function corridorForShipment(shipment: Shipment, index: number): Corridor {
+  const laneText = `${shipment.originFacilityId} ${shipment.destinationFacilityId}`.toLowerCase();
+  if (laneText.includes("montreal") || laneText.includes("boston")) return northeastCorridor;
+  if (laneText.includes("sacramento") || laneText.includes("vancouver")) return westCoastCorridor;
+  if (laneText.includes("toronto") || laneText.includes("detroit")) return midwestCorridor;
+  return corridors[index % corridors.length] ?? texasOklahomaCorridor;
+}
+
+function corridorPath(corridor: Corridor): string {
+  return corridor.nodes.map((node) => `${node.x},${node.y}`).join(" ");
+}
+
+function pointOnCorridor(corridor: Corridor, progress: number): { x: number; y: number } {
+  const segmentCount = corridor.nodes.length - 1;
+  const rawSegment = Math.min(segmentCount - 0.001, Math.max(0, progress * segmentCount));
+  const segmentIndex = Math.floor(rawSegment);
+  const localProgress = rawSegment - segmentIndex;
+  const from = corridor.nodes[segmentIndex] ?? corridor.nodes[0];
+  if (!from) return { x: 50, y: 50 };
+  const to = corridor.nodes[segmentIndex + 1] ?? from;
   return {
-    x: ((longitude - minLng) / (maxLng - minLng)) * 100,
-    y: (1 - (latitude - minLat) / (maxLat - minLat)) * 100
+    x: from.x + (to.x - from.x) * localProgress,
+    y: from.y + (to.y - from.y) * localProgress
   };
 }
 
