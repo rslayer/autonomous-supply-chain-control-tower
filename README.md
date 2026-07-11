@@ -307,6 +307,15 @@ packages/
 
 The dashboard includes a data-upload prep panel that can download CSV templates, parse uploaded CSV rows, detect table type from headers, validate row-level values, and show valid row counts plus the first validation errors.
 
+The simulator also includes an agentic automation layer. Each detected exception is classified, routed through structured recovery agents, checked against policy guardrails, and turned into an automation decision:
+
+- `auto_executed`
+- `auto_recommended`
+- `needs_approval`
+- `manual_only`
+
+The Automation Workbench shows agent traces, selected actions, cost/service tradeoffs, policy outcomes, automation coverage, touchless resolution, and estimated planner hours saved.
+
 ## Running Locally
 
 Install dependencies:

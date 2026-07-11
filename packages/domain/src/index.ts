@@ -55,6 +55,21 @@ export type RecommendationType =
   | "manual_review"
   | "increase_production";
 
+export type AutomationStatus =
+  | "auto_executed"
+  | "auto_recommended"
+  | "needs_approval"
+  | "manual_only";
+
+export type AgentName =
+  | "Exception Classifier Agent"
+  | "Transportation Recovery Agent"
+  | "Inventory Balancing Agent"
+  | "Customer Promise Agent"
+  | "Policy Agent"
+  | "Finance Agent"
+  | "Coordinator Agent";
+
 export interface GeoPoint {
   latitude: number;
   longitude: number;
@@ -245,6 +260,30 @@ export interface ActionRecommendation {
   requiresApproval: boolean;
 }
 
+export interface AgentTraceStep {
+  agent: AgentName;
+  finding: string;
+  confidence: number;
+  evidence: string[];
+}
+
+export interface AutomationDecision {
+  id: string;
+  exceptionId: string;
+  status: AutomationStatus;
+  selectedAction: ActionRecommendation;
+  candidateActions: ActionRecommendation[];
+  agentTrace: AgentTraceStep[];
+  policyResult: {
+    allowed: boolean;
+    reason: string;
+    approvalThreshold?: number;
+  };
+  estimatedCost: number;
+  estimatedServiceRecovery: number;
+  createdAt: string;
+}
+
 export interface SimulationMetrics {
   onTimeDeliveryPct: number;
   openExceptions: number;
@@ -256,6 +295,13 @@ export interface SimulationMetrics {
   inventoryBelowSafetyStock: number;
   serviceImpactEstimate: number;
   recoveryCostEstimate: number;
+  autoExecuted: number;
+  autoRecommended: number;
+  needsApproval: number;
+  manualOnly: number;
+  automationCoveragePct: number;
+  touchlessResolutionPct: number;
+  plannerHoursSaved: number;
 }
 
 export interface SimulationEvent {
@@ -285,6 +331,7 @@ export interface ScenarioState {
   demandForecasts: DemandForecast[];
   disruptions: Disruption[];
   exceptions: ControlTowerException[];
+  automationDecisions: AutomationDecision[];
   events: SimulationEvent[];
   metrics: SimulationMetrics;
 }

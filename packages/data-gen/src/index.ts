@@ -28,7 +28,14 @@ function metrics(): SimulationMetrics {
     carrierFailureCount: 0,
     inventoryBelowSafetyStock: 0,
     serviceImpactEstimate: 0,
-    recoveryCostEstimate: 0
+    recoveryCostEstimate: 0,
+    autoExecuted: 0,
+    autoRecommended: 0,
+    needsApproval: 0,
+    manualOnly: 0,
+    automationCoveragePct: 0,
+    touchlessResolutionPct: 0,
+    plannerHoursSaved: 0
   };
 }
 
@@ -109,6 +116,7 @@ export function createTexasOklahomaScenario(): ScenarioState {
     demandForecasts,
     disruptions,
     exceptions: [],
+    automationDecisions: [],
     events: [
       {
         id: "evt-start",

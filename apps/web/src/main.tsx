@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { Activity, AlertTriangle, Boxes, Building2, Clock, Filter, Play, RotateCcw, StepForward, Truck } from "lucide-react";
+import { Activity, AlertTriangle, Bot, Boxes, Building2, CheckCircle2, Clock, Filter, Play, RotateCcw, StepForward, Truck } from "lucide-react";
 import { createTexasOklahomaScenario } from "@control-tower/data-gen";
 import { stepSimulation } from "@control-tower/simulation";
 import type { BusinessUnit, ScenarioState } from "@control-tower/domain";
@@ -126,9 +126,9 @@ function App() {
       <section className="kpis" aria-label="Control tower KPIs">
         <Kpi icon={<Activity size={20} />} label="On-time" value={`${scenario.metrics.onTimeDeliveryPct}%`} />
         <Kpi icon={<AlertTriangle size={20} />} label="Open exceptions" value={filteredExceptions.length.toString()} />
-        <Kpi icon={<AlertTriangle size={20} />} label="Critical" value={filteredExceptions.filter((exception) => exception.severity === "critical").length.toString()} />
-        <Kpi icon={<Boxes size={20} />} label="Stockout risks" value={scenario.metrics.projectedStockouts.toString()} />
-        <Kpi icon={<Truck size={20} />} label="Avg delay" value={`${scenario.metrics.averageDelayHours}h`} />
+        <Kpi icon={<Bot size={20} />} label="Automation coverage" value={`${scenario.metrics.automationCoveragePct}%`} />
+        <Kpi icon={<CheckCircle2 size={20} />} label="Auto-executed" value={scenario.metrics.autoExecuted.toString()} />
+        <Kpi icon={<Clock size={20} />} label="Hours saved" value={`${scenario.metrics.plannerHoursSaved}h`} />
       </section>
 
       <section className="grid">
@@ -149,6 +149,39 @@ function App() {
               </article>
             ))}
             {filteredExceptions.length === 0 && <p className="empty">No exceptions yet. Step the simulation to create operational pressure.</p>}
+          </div>
+        </Panel>
+
+        <Panel title="Automation Workbench" icon={<Bot size={18} />}>
+          <div className="automation-summary">
+            <AutomationStat label="Touchless" value={`${scenario.metrics.touchlessResolutionPct}%`} />
+            <AutomationStat label="Recommended" value={scenario.metrics.autoRecommended.toString()} />
+            <AutomationStat label="Needs approval" value={scenario.metrics.needsApproval.toString()} />
+            <AutomationStat label="Manual" value={scenario.metrics.manualOnly.toString()} />
+          </div>
+          <div className="automation-list">
+            {scenario.automationDecisions.slice(0, 6).map((decision) => (
+              <article className={`automation-card ${decision.status}`} key={decision.id}>
+                <div className="automation-card-header">
+                  <span>{decision.status.replaceAll("_", " ")}</span>
+                  <strong>{decision.selectedAction.title}</strong>
+                </div>
+                <p>{decision.policyResult.reason}</p>
+                <div className="tradeoff">
+                  <span>${decision.estimatedCost.toLocaleString()} cost</span>
+                  <span>{decision.estimatedServiceRecovery} recovery</span>
+                </div>
+                <ol>
+                  {decision.agentTrace.slice(0, 4).map((step) => (
+                    <li key={`${decision.id}-${step.agent}`}>
+                      <strong>{step.agent}</strong>
+                      <span>{step.finding}</span>
+                    </li>
+                  ))}
+                </ol>
+              </article>
+            ))}
+            {scenario.automationDecisions.length === 0 && <p className="empty">Run the simulation to generate agent automation decisions.</p>}
           </div>
         </Panel>
 
@@ -258,6 +291,15 @@ function Kpi({ icon, label, value }: { icon: React.ReactNode; label: string; val
         <strong>{value}</strong>
       </div>
     </article>
+  );
+}
+
+function AutomationStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="automation-stat">
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
   );
 }
 
